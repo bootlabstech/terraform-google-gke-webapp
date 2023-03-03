@@ -163,7 +163,7 @@ resource "google_sql_database_instance" "instance" {
 
   depends_on = [
     #google_service_networking_connection.private_vpc_connection,
-    google_project_service_identity.sa 
+    google_project_service_identity.sa , google_compute_global_forwarding_rule.forwarding_rule
   ]
 
 }
@@ -175,9 +175,6 @@ resource "google_project_service_identity" "sa" {
 
   project = var.project_id
   service = "sqladmin.googleapis.com"
-  depends_on = [
-    google_compute_global_forwarding_rule
-  ]
 }
 
 # Creating redis cache
