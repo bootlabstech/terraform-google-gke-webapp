@@ -10,7 +10,7 @@ resource "google_compute_backend_service" "backend_service" {
   }
 }
 
-resource "google_compute_url_map" "url_map" {ipv4_enabled
+resource "google_compute_url_map" "url_map" {
   project         = var.project_id
   name            = "${var.name}-url-map"
   default_service = google_compute_backend_service.backend_service.id
