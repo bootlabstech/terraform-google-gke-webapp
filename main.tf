@@ -10,6 +10,25 @@ resource "google_compute_backend_service" "backend_service" {
   }
 }
 
+resource "google_compute_url_map" "url_map" {ipv4_enabled
+  project         = var.project_id
+  name            = "${var.name}-url-map"
+  default_service = google_compute_backend_service.backend_service.id
+  depends_on = [
+    google_compute_backend_service.backend_service
+  ]
+}
+
+resource "google_compute_target_http_proxy" "target-proxy" {
+  project = var.project_id
+  name    = "${var.name}-target-proxy"
+  url_map = google_compute_url_map.url_map.id
+  depends_on = [
+    google_compute_url_map.url_map
+  ]
+}
+
+
 resource "google_compute_global_forwarding_rule" "forwarding_rule" {
   project               = var.project_id
   name                  = "${var.name}-forwarding-rule"
@@ -24,23 +43,8 @@ resource "google_compute_global_forwarding_rule" "forwarding_rule" {
   ]
 }
 
-resource "google_compute_target_http_proxy" "target-proxy" {
-  project = var.project_id
-  name    = "${var.name}-target-proxy"
-  url_map = google_compute_url_map.url_map.id
-  depends_on = [
-    google_compute_url_map.url_map
-  ]
-}
 
-resource "google_compute_url_map" "url_map" {
-  project         = var.project_id
-  name            = "${var.name}-url-map"
-  default_service = google_compute_backend_service.backend_service.id
-  depends_on = [
-    google_compute_backend_service.backend_service
-  ]
-}
+
 
 # Creating SQL Database
 
@@ -159,7 +163,7 @@ resource "google_sql_database_instance" "instance" {
 
   depends_on = [
     #google_service_networking_connection.private_vpc_connection,
-    google_project_service_identity.sa , google_compute_global_forwarding_rule
+    google_project_service_identity.sa 
   ]
 
 }
@@ -171,6 +175,9 @@ resource "google_project_service_identity" "sa" {
 
   project = var.project_id
   service = "sqladmin.googleapis.com"
+  depends_on = [
+    google_compute_global_forwarding_rule
+  ]
 }
 
 # Creating redis cache
